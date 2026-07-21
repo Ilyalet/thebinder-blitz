@@ -64,7 +64,7 @@ export default function AIDocumentScanner({ onUploadComplete }) {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <CardContent className="flex flex-col items-center justify-center py-10 gap-3">
+      <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-3 py-4">
         <input
           ref={fileInputRef}
           type="file"
@@ -74,16 +74,20 @@ export default function AIDocumentScanner({ onUploadComplete }) {
           disabled={isUploading}
         />
         {isUploading ? (
-          <>
-            <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-6 w-6 text-blue-600 animate-spin shrink-0" />
             <p className="text-sm text-gray-600">Uploading document...</p>
-          </>
+          </div>
         ) : (
           <>
-            <Upload className="h-10 w-10 text-blue-500" />
-            <p className="text-sm font-medium text-gray-700">Drag and drop a document, or</p>
-            <p className="text-xs text-gray-500">Receipts, warranties, bills, insurance, and more</p>
-            <Button onClick={() => fileInputRef.current?.click()} className="mt-2">
+            <div className="flex items-center gap-3 text-center sm:text-left">
+              <Upload className="h-6 w-6 text-blue-500 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-gray-700">Drag and drop a document, or choose a file</p>
+                <p className="text-xs text-gray-500">Receipts, warranties, bills, insurance, and more</p>
+              </div>
+            </div>
+            <Button size="sm" onClick={() => fileInputRef.current?.click()} className="shrink-0">
               <Camera className="h-4 w-4 mr-2" />
               Choose File
             </Button>
