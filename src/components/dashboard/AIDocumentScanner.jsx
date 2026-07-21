@@ -10,12 +10,12 @@ import { useToast } from '@/components/ui/use-toast';
 
 export default function AIDocumentScanner({ onUploadComplete }) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleFileSelect = async (e) => {
-    const file = e.target.files?.[0];
+  const uploadFile = async (file) => {
     if (!file) return;
     setIsUploading(true);
     try {
@@ -38,8 +38,32 @@ export default function AIDocumentScanner({ onUploadComplete }) {
     }
   };
 
+  const handleFileSelect = (e) => uploadFile(e.target.files?.[0]);
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    if (!isUploading) setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (isUploading) return;
+    uploadFile(e.dataTransfer.files?.[0]);
+  };
+
   return (
-    <Card className="border-2 border-dashed border-blue-300 bg-blue-50/50">
+    <Card
+      className={`border-2 border-dashed transition-colors ${isDragOver ? 'border-blue-500 bg-blue-100/70' : 'border-blue-300 bg-blue-50/50'}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <CardContent className="flex flex-col items-center justify-center py-10 gap-3">
         <input
           ref={fileInputRef}
@@ -57,7 +81,7 @@ export default function AIDocumentScanner({ onUploadComplete }) {
         ) : (
           <>
             <Upload className="h-10 w-10 text-blue-500" />
-            <p className="text-sm font-medium text-gray-700">Scan or upload a document</p>
+            <p className="text-sm font-medium text-gray-700">Drag and drop a document, or</p>
             <p className="text-xs text-gray-500">Receipts, warranties, bills, insurance, and more</p>
             <Button onClick={() => fileInputRef.current?.click()} className="mt-2">
               <Camera className="h-4 w-4 mr-2" />

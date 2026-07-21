@@ -70,10 +70,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogle = () => {
-    base44.auth.loginWithProvider('google', fromUrl);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-sm">
@@ -114,9 +110,6 @@ export default function LoginPage() {
 
           {mode !== 'verify' && (
             <>
-              <Button variant="outline" className="w-full" onClick={handleGoogle} type="button">
-                Continue with Google
-              </Button>
               <button
                 type="button"
                 onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
