@@ -1,0 +1,497 @@
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Task } from '@/entities/all';
+import EditTaskModal from '@/components/tasks/EditTaskModal';
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2, ChevronLeft, ChevronRight, Plus, Bell, Download } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addWeeks, addMonths, subMonths, subWeeks, isSameMonth, isSameDay, parseISO } from 'date-fns';
+import { useToast } from "@/components/ui/use-toast";
+import TaskCreator from '@/components/tasks/TaskCreator';
+import AiFeatureWrapper from '@/components/ai/AiFeatureWrapper';
+import { exportCalendar } from '@/functions/exportCalendar';
+
+const CalendarDay = ({ date, tasks, reminders, isCurrentMonth, isToday, onClick }) => {
+  const dayTasks = tasks.filter(task =>
+    task.due_date && isSameDay(parseISO(task.due_date), date)
+  );
+
+  const dayReminders = reminders.filter(reminder =>
+    reminder.due_date && isSameDay(parseISO(reminder.due_date), date)
+  );
+
+  const allItems = [...dayTasks, ...dayReminders];
+
+  const getItemColor = (item) => {
+    const isTask = item.type === 'task';
+    const priority = item.priority;
+
+    if (isTask) {
+      switch (priority) {
+        case 'high': return 'bg-red-200 text-red-800 border-red-300';
+        case 'medium': return 'bg-orange-200 text-orange-800 border-orange-300';
+        case 'low': return 'bg-blue-200 text-blue-800 border-blue-300';
+        default: return 'bg-gray-200 text-gray-800 border-gray-300';
+      }
+    } else {
+      switch (priority) {
+        case 'high': return 'bg-purple-200 text-purple-800 border-purple-300';
+        case 'medium': return 'bg-indigo-200 text-indigo-800 border-indigo-300';
+        case 'low': return 'bg-teal-200 text-teal-800 border-teal-300';
+        default: return 'bg-slate-200 text-slate-800 border-slate-300';
+      }
+    }
+  };
+
+  return (
+    <div
+      className={`min-h-[100px] p-2 border border-gray-200 cursor-pointer transition-colors hover:bg-gray-50 ${
+        !isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'
+      } ${isToday ? 'bg-blue-50 border-blue-300' : ''}`}
+      onClick={() => onClick(date, allItems)}
+    >
+      <div className={`text-sm font-medium mb-2 ${isToday ? 'text-blue-600' : ''}`}>
+        {format(date, 'd')}
+      </div>
+      <div className="space-y-1">
+        {allItems.slice(0, 3).map(item => (
+          <div
+            key={item.id}
+            className={`text-xs p-1.5 rounded border truncate ${getItemColor(item)}`}
+            title={`${item.type === 'task' ? 'Task' : 'Reminder'}: ${item.title}`}
+          >
+            <div className="flex items-center gap-1">
+              {item.type === 'task' ? (
+                <div className="w-2 h-2 rounded bg-current opacity-60" />
+              ) : (
+                <Bell className="w-2 h-2" />
+              )}
+              <span className="truncate font-medium">{item.title}</span>
+            </div>
+          </div>
+        ))}
+        {allItems.length > 3 && (
+          <div className="text-xs text-gray-500 font-medium">+{allItems.length - 3} more</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const WeeklyCalendarDay = ({ date, tasks, reminders, isToday, onClick }) => {
+  const dayTasks = tasks.filter(task =>
+    task.due_date && isSameDay(parseISO(task.due_date), date)
+  );
+
+  const dayReminders = reminders.filter(reminder =>
+    reminder.due_date && isSameDay(parseISO(reminder.due_date), date)
+  );
+
+  const allItems = [...dayTasks, ...dayReminders];
+
+  const getItemColor = (item) => {
+    const isTask = item.type === 'task';
+    const priority = item.priority;
+
+    if (isTask) {
+      switch (priority) {
+        case 'high': return 'bg-red-100 text-red-800 border-red-200';
+        case 'medium': return 'bg-orange-100 text-orange-800 border-orange-200';
+        case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
+        default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      }
+    } else {
+      switch (priority) {
+        case 'high': return 'bg-purple-100 text-purple-800 border-purple-200';
+        case 'medium': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+        case 'low': return 'bg-teal-100 text-teal-800 border-teal-200';
+        default: return 'bg-slate-100 text-slate-800 border-slate-200';
+      }
+    }
+  };
+
+  return (
+    <div className={`flex-1 min-h-[250px] border-r border-gray-200 last:border-r-0 ${isToday ? 'bg-blue-50' : ''}`}>
+      <div className={`p-3 border-b border-gray-200 font-medium text-center ${
+        isToday ? 'bg-blue-600 text-white' : 'bg-gray-50'
+      }`}>
+        <div className="text-xs">{format(date, 'EEE')}</div>
+        <div className="text-xl">{format(date, 'd')}</div>
+      </div>
+      <div className="p-2 space-y-2">
+        {allItems.map(item => (
+          <div
+            key={item.id}
+            className={`text-xs p-2 rounded border cursor-pointer hover:shadow-sm transition-shadow ${getItemColor(item)}`}
+            onClick={() => onClick(date, [item])}
+            title={`${item.type === 'task' ? 'Task' : 'Reminder'}: ${item.title} - ${item.description || 'No description'}`}
+          >
+            <div className="flex items-center gap-1 font-medium mb-1">
+              {item.type === 'task' ? (
+                <div className="w-2 h-2 rounded bg-current" />
+              ) : (
+                <Bell className="w-3 h-3" />
+              )}
+              <span className="truncate">{item.title}</span>
+            </div>
+            {item.description && (
+              <div className="text-xs opacity-75 truncate">{item.description}</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default function CalendarPage() {
+  const [allTasks, setAllTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewType, setViewType] = useState('month');
+  const [editingItem, setEditingItem] = useState(null);
+  const [deletingItem, setDeletingItem] = useState(null);
+  const [showTaskCreator, setShowTaskCreator] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
+
+  const tasks = useMemo(() =>
+    allTasks.filter(item => item.type === 'task'),
+    [allTasks]
+  );
+
+  const reminders = useMemo(() =>
+    allTasks.filter(item => item.type === 'reminder'),
+    [allTasks]
+  );
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const allItemsData = await Task.list();
+      setAllTasks(allItemsData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load calendar data",
+        variant: "destructive"
+      });
+    }
+    setLoading(false);
+  }, [toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const calendarStart = startOfWeek(monthStart);
+  const calendarEnd = endOfWeek(monthEnd);
+
+  const weekStart = startOfWeek(currentDate);
+  const weekEnd = endOfWeek(currentDate);
+
+  const monthDays = useMemo(() => {
+    const days = [];
+    let day = calendarStart;
+    while (day <= calendarEnd) {
+      days.push(day);
+      day = addDays(day, 1);
+    }
+    return days;
+  }, [calendarStart, calendarEnd]);
+
+  const weekDays = useMemo(() => {
+    const days = [];
+    let day = weekStart;
+    while (day <= weekEnd) {
+      days.push(day);
+      day = addDays(day, 1);
+    }
+    return days;
+  }, [weekStart, weekEnd]);
+
+  const navigateMonth = (direction) => {
+    setCurrentDate(direction === 'next' ? addMonths(currentDate, 1) : subMonths(currentDate, 1));
+  };
+
+  const navigateWeek = (direction) => {
+    setCurrentDate(direction === 'next' ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1));
+  };
+
+  const handleDayClick = (date, dayItems) => {
+    if (dayItems.length > 0) {
+      setEditingItem(dayItems[0]);
+    }
+  };
+
+  const handleItemUpdated = () => {
+    setEditingItem(null);
+    fetchData();
+    toast({ title: "Success", description: "Item has been updated." });
+  };
+
+  const handleDelete = async () => {
+    if (!deletingItem) return;
+    try {
+      await Task.delete(deletingItem.id);
+      setDeletingItem(null);
+      fetchData();
+      toast({ title: "Success", description: "Item has been deleted." });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete item",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleTaskCreated = () => {
+    setShowTaskCreator(null);
+    fetchData();
+    toast({ title: "Success", description: "Item created successfully." });
+  };
+
+  const goToToday = () => {
+    setCurrentDate(new Date());
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const { data, headers } = await exportCalendar();
+      const blob = new Blob([data], { type: headers['content-type'] });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      let filename = 'calendar.ics';
+      const disposition = headers['content-disposition'];
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[1]) {
+          filename = matches[1].replace(/['"]/g, '');
+        }
+      }
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast({
+        title: "Export Successful",
+        description: "Your calendar has been exported as an .ics file.",
+      });
+    } catch (error) {
+      console.error("Failed to export calendar:", error);
+      toast({
+        title: "Export Failed",
+        description: "Could not generate the calendar file. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
+            <p className="text-sm text-gray-500">View all your tasks and reminders in calendar format.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <AiFeatureWrapper
+              featureName="Calendar Export"
+              placeholder={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  className="flex items-center gap-2 opacity-50 cursor-not-allowed"
+                >
+                  <Download className="h-4 w-4" />
+                  Export
+                </Button>
+              }
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExport}
+                disabled={isExporting}
+                className="flex items-center gap-2"
+              >
+                {isExporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                Export
+              </Button>
+            </AiFeatureWrapper>
+            <Button
+              size="sm"
+              onClick={() => setShowTaskCreator('task')}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add Task
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowTaskCreator('reminder')}
+              className="flex items-center gap-2"
+            >
+              <Bell className="h-4 w-4" />
+              Add Reminder
+            </Button>
+          </div>
+        </div>
+
+        <div className="mb-6 flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-blue-200 border border-blue-300"></div>
+            <span className="text-sm text-gray-600">Tasks</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Bell className="w-3 h-3 text-purple-600" />
+            <span className="text-sm text-gray-600">Reminders</span>
+          </div>
+          <div className="text-xs text-gray-500">
+            Colors indicate priority: Light = Low, Medium = Medium, Dark = High
+          </div>
+        </div>
+
+        <Card className="bg-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <div className="flex items-center gap-4">
+              <CardTitle className="text-lg">
+                {viewType === 'month'
+                  ? format(currentDate, 'MMMM yyyy')
+                  : `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`
+                }
+              </CardTitle>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant={viewType === 'month' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewType('month')}
+                >
+                  Month
+                </Button>
+                <Button
+                  variant={viewType === 'week' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewType('week')}
+                >
+                  Week
+                </Button>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={goToToday}>
+                Today
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => viewType === 'month' ? navigateMonth('prev') : navigateWeek('prev')}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => viewType === 'month' ? navigateMonth('next') : navigateWeek('next')}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {viewType === 'month' ? (
+              <div className="grid grid-cols-7 border-t border-gray-200">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  <div key={day} className="p-3 text-center text-sm font-medium text-gray-600 border-b border-gray-200 bg-gray-50">
+                    {day}
+                  </div>
+                ))}
+
+                {monthDays.map(day => (
+                  <CalendarDay
+                    key={day.toISOString()}
+                    date={day}
+                    tasks={tasks}
+                    reminders={reminders}
+                    isCurrentMonth={isSameMonth(day, currentDate)}
+                    isToday={isSameDay(day, new Date())}
+                    onClick={handleDayClick}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex border-t border-gray-200">
+                {weekDays.map(day => (
+                  <WeeklyCalendarDay
+                    key={day.toISOString()}
+                    date={day}
+                    tasks={tasks}
+                    reminders={reminders}
+                    isToday={isSameDay(day, new Date())}
+                    onClick={handleDayClick}
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {editingItem && (
+        <EditTaskModal
+          task={editingItem}
+          isOpen={!!editingItem}
+          onClose={() => setEditingItem(null)}
+          onTaskUpdated={handleItemUpdated}
+          onTaskDeleted={() => {
+            setDeletingItem(editingItem);
+            setEditingItem(null);
+          }}
+        />
+      )}
+
+      {deletingItem && (
+        <DeleteConfirmationDialog
+          isOpen={!!deletingItem}
+          onClose={() => setDeletingItem(null)}
+          onConfirm={handleDelete}
+          itemName={deletingItem.title}
+        />
+      )}
+
+      {showTaskCreator && (
+        <TaskCreator
+          taskType={showTaskCreator}
+          isOpen={!!showTaskCreator}
+          onClose={() => setShowTaskCreator(null)}
+          onTaskCreated={handleTaskCreated}
+        />
+      )}
+    </div>
+  );
+}
