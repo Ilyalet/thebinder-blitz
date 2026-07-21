@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
@@ -83,7 +83,11 @@ const AppLayout = ({ children }) => {
   }, [fetchStatsData]);
 
   // Daily insight for the floating assistant, cached in localStorage per day.
+  // Guarded against StrictMode's double-invoked mount effect firing this twice.
+  const hasFetchedInsight = useRef(false);
   useEffect(() => {
+    if (hasFetchedInsight.current) return;
+    hasFetchedInsight.current = true;
     const fetchInsight = async () => {
       try {
         const todayStr = new Date().toISOString().split('T')[0];

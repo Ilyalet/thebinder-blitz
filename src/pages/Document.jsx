@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Document, Task, TaskSuggestion, TagSuggestion } from "@/entities/all";
 import { InvokeLLM } from "@/integrations/Core";
@@ -115,6 +115,11 @@ export default function DocumentPage() {
   const [duplicateDocuments, setDuplicateDocuments] = useState([]);
   const [newTagInput, setNewTagInput] = useState("");
   const [isAddingTag, setIsAddingTag] = useState(false);
+
+  // Guards against processDocumentDetails firing twice for the same document
+  // (e.g. React StrictMode double-invoking the mount effect below), which
+  // would otherwise create duplicate tag/task suggestions.
+  const autoProcessedDocIds = useRef(new Set());
 
   const docId = searchParams.get("id");
 
@@ -318,7 +323,8 @@ Return tasks/reminders in the document's original language.`,
 
       setDuplicateDocuments([]);
 
-      if (documentData.status === 'processing') {
+      if (documentData.status === 'processing' && !autoProcessedDocIds.current.has(id)) {
+        autoProcessedDocIds.current.add(id);
         await processDocumentDetails(documentData);
       }
     } catch (error) {
