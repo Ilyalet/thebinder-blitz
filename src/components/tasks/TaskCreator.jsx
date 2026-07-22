@@ -53,7 +53,7 @@ export default function TaskCreator({ taskType = 'task', isOpen, onClose, onTask
             <Label>Description</Label>
             <Input value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
-          <div className={isReminder ? 'grid grid-cols-3 gap-3' : 'grid grid-cols-2 gap-3'}>
+          <div className={isReminder ? 'grid grid-cols-2 sm:grid-cols-3 gap-3' : 'grid grid-cols-2 gap-3'}>
             <div>
               <Label>Due date{isReminder ? '' : ' (optional)'}</Label>
               <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />

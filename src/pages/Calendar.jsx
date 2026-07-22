@@ -66,11 +66,11 @@ const WeeklyCalendarDay = ({ date, reminders, isToday, onClick }) => {
   );
 
   return (
-    <div className={`flex-1 min-h-[250px] border-r border-gray-200 last:border-r-0 ${isToday ? 'bg-blue-50' : ''}`}>
-      <div className={`p-3 border-b border-gray-200 font-medium text-center ${
+    <div className={`w-full lg:flex-1 min-h-[80px] lg:min-h-[250px] border-b lg:border-b-0 lg:border-r border-gray-200 last:border-b-0 last:border-r-0 ${isToday ? 'bg-blue-50' : ''}`}>
+      <div className={`p-3 border-b border-gray-200 font-medium flex items-center justify-between lg:block lg:text-center ${
         isToday ? 'bg-blue-600 text-white' : 'bg-gray-50'
       }`}>
-        <div className="text-xs">{format(date, 'EEE')}</div>
+        <div className="text-sm lg:text-xs">{format(date, 'EEE')}</div>
         <div className="text-xl">{format(date, 'd')}</div>
       </div>
       <div className="p-2 space-y-2">
@@ -306,8 +306,8 @@ export default function CalendarPage() {
         </div>
 
         <Card className="bg-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <div className="flex items-center gap-4">
+          <CardHeader className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-0 gap-3 pb-4">
+            <div className="flex flex-wrap items-center gap-4">
               <CardTitle className="text-lg">
                 {viewType === 'month'
                   ? format(currentDate, 'MMMM yyyy')
@@ -372,7 +372,7 @@ export default function CalendarPage() {
                 ))}
               </div>
             ) : (
-              <div className="flex border-t border-gray-200">
+              <div className="flex flex-col lg:flex-row border-t border-gray-200">
                 {weekDays.map(day => (
                   <WeeklyCalendarDay
                     key={day.toISOString()}

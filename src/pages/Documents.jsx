@@ -207,7 +207,7 @@ export default function DocumentsPage() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <div className="flex justify-between items-start">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Documents</h1>
               <p className="text-sm text-gray-500 mt-1">Search, filter, and organize your documents.</p>
