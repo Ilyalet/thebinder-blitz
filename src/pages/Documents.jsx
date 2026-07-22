@@ -224,6 +224,19 @@ export default function DocumentsPage() {
           </div>
         </div>
 
+        <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search documents..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {isSearching && <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 animate-spin" />}
+          </div>
+        </div>
+
         <div className="flex gap-6">
           <div className="flex-1">
             <Tabs defaultValue="all-docs" className="w-full">
@@ -233,19 +246,6 @@ export default function DocumentsPage() {
                 </TabsList>
 
                 <TabsContent value="all-docs">
-                  <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <div className="relative flex-grow">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                      <Input
-                        placeholder="Search documents..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-10"
-                      />
-                      {isSearching && <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 animate-spin" />}
-                    </div>
-                  </div>
-
                   {!loading && <TagFilters availableTags={availableTags} selectedTags={selectedTags} onTagSelect={setSelectedTags} onClearAll={handleClearAllTags}/>}
 
                   {loading ? (

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
+import GlobalSearchBar from '@/components/search/GlobalSearchBar';
 
 export default function Dashboard() {
   const [documents, setDocuments] = useState([]);
@@ -102,6 +103,9 @@ export default function Dashboard() {
                   <Button variant="ghost" size="sm" className="text-xs sm:text-sm">View all</Button>
                 </Link>
               </div>
+            </div>
+            <div className="mb-4">
+              <GlobalSearchBar />
             </div>
             {loading ? (
                 <div className="flex justify-center items-center h-64">

@@ -7,7 +7,6 @@ import { Home, FileText, CheckCircle, Bell, Settings, Menu, Tag, Loader2, Calend
 import TodayActivity from '@/components/dashboard/TodayActivity';
 import { Document, Task, User } from '@/entities/all';
 import { format } from 'date-fns';
-import GlobalSearchBar from '@/components/search/GlobalSearchBar';
 import DocumentAgent from '@/components/documents/DocumentAgent';
 import { cn } from '@/lib/utils';
 import { InvokeLLM } from '@/integrations/Core';
@@ -195,7 +194,6 @@ ${allText.substring(0, 8000)}
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="lg:hidden text-gray-500">
             <Menu className="h-6 w-6" />
           </Button>
-          <GlobalSearchBar />
           <div className="flex-1" />
           <Link to={createPageUrl('Help')} title="Help Center">
             <Button variant="ghost" size="icon">
