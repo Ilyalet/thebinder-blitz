@@ -31,7 +31,14 @@ export default function TaskItem({ task, onStatusChange, onEdit, onDelete }) {
           {task.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{task.description}</p>}
           <div className="flex items-center gap-2 mt-2">
             {task.priority && <Badge variant="outline" className={PRIORITY_COLORS[task.priority] || ''}>{task.priority}</Badge>}
-            {task.due_date && <span className="text-xs text-gray-500">Due {format(parseISO(task.due_date), 'MMM d, yyyy')}</span>}
+            {task.due_date && task.type === 'reminder' && task.due_time && (
+              <span className="text-xs text-gray-500">
+                Due {format(parseISO(`${task.due_date}T${task.due_time}`), "MMM d, yyyy 'at' h:mm a")}
+              </span>
+            )}
+            {task.due_date && task.type !== 'reminder' && (
+              <span className="text-xs text-gray-500">Due {format(parseISO(task.due_date), 'MMM d, yyyy')}</span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-1 shrink-0">

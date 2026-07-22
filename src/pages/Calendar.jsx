@@ -11,104 +11,59 @@ import TaskCreator from '@/components/tasks/TaskCreator';
 import AiFeatureWrapper from '@/components/ai/AiFeatureWrapper';
 import { exportCalendar } from '@/functions/exportCalendar';
 
-const CalendarDay = ({ date, tasks, reminders, isCurrentMonth, isToday, onClick }) => {
-  const dayTasks = tasks.filter(task =>
-    task.due_date && isSameDay(parseISO(task.due_date), date)
-  );
+function formatTime(reminder) {
+  return format(parseISO(`${reminder.due_date}T${reminder.due_time}`), 'h:mm a');
+}
 
+function getReminderColor(priority) {
+  switch (priority) {
+    case 'high': return 'bg-purple-200 text-purple-800 border-purple-300';
+    case 'medium': return 'bg-indigo-200 text-indigo-800 border-indigo-300';
+    case 'low': return 'bg-teal-200 text-teal-800 border-teal-300';
+    default: return 'bg-slate-200 text-slate-800 border-slate-300';
+  }
+}
+
+const CalendarDay = ({ date, reminders, isCurrentMonth, isToday, onClick }) => {
   const dayReminders = reminders.filter(reminder =>
     reminder.due_date && isSameDay(parseISO(reminder.due_date), date)
   );
-
-  const allItems = [...dayTasks, ...dayReminders];
-
-  const getItemColor = (item) => {
-    const isTask = item.type === 'task';
-    const priority = item.priority;
-
-    if (isTask) {
-      switch (priority) {
-        case 'high': return 'bg-red-200 text-red-800 border-red-300';
-        case 'medium': return 'bg-orange-200 text-orange-800 border-orange-300';
-        case 'low': return 'bg-blue-200 text-blue-800 border-blue-300';
-        default: return 'bg-gray-200 text-gray-800 border-gray-300';
-      }
-    } else {
-      switch (priority) {
-        case 'high': return 'bg-purple-200 text-purple-800 border-purple-300';
-        case 'medium': return 'bg-indigo-200 text-indigo-800 border-indigo-300';
-        case 'low': return 'bg-teal-200 text-teal-800 border-teal-300';
-        default: return 'bg-slate-200 text-slate-800 border-slate-300';
-      }
-    }
-  };
 
   return (
     <div
       className={`min-h-[100px] p-2 border border-gray-200 cursor-pointer transition-colors hover:bg-gray-50 ${
         !isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'
       } ${isToday ? 'bg-blue-50 border-blue-300' : ''}`}
-      onClick={() => onClick(date, allItems)}
+      onClick={() => onClick(date, dayReminders)}
     >
       <div className={`text-sm font-medium mb-2 ${isToday ? 'text-blue-600' : ''}`}>
         {format(date, 'd')}
       </div>
       <div className="space-y-1">
-        {allItems.slice(0, 3).map(item => (
+        {dayReminders.slice(0, 3).map(reminder => (
           <div
-            key={item.id}
-            className={`text-xs p-1.5 rounded border truncate ${getItemColor(item)}`}
-            title={`${item.type === 'task' ? 'Task' : 'Reminder'}: ${item.title}`}
+            key={reminder.id}
+            className={`text-xs p-1.5 rounded border truncate ${getReminderColor(reminder.priority)}`}
+            title={`Reminder: ${reminder.title}`}
           >
             <div className="flex items-center gap-1">
-              {item.type === 'task' ? (
-                <div className="w-2 h-2 rounded bg-current opacity-60" />
-              ) : (
-                <Bell className="w-2 h-2" />
-              )}
-              <span className="truncate font-medium">{item.title}</span>
+              <Bell className="w-2 h-2 shrink-0" />
+              <span className="truncate font-medium">{formatTime(reminder)} · {reminder.title}</span>
             </div>
           </div>
         ))}
-        {allItems.length > 3 && (
-          <div className="text-xs text-gray-500 font-medium">+{allItems.length - 3} more</div>
+        {dayReminders.length > 3 && (
+          <div className="text-xs text-gray-500 font-medium">+{dayReminders.length - 3} more</div>
         )}
       </div>
     </div>
   );
 };
 
-const WeeklyCalendarDay = ({ date, tasks, reminders, isToday, onClick }) => {
-  const dayTasks = tasks.filter(task =>
-    task.due_date && isSameDay(parseISO(task.due_date), date)
-  );
-
+const WeeklyCalendarDay = ({ date, reminders, isToday, onClick }) => {
   const dayReminders = reminders.filter(reminder =>
     reminder.due_date && isSameDay(parseISO(reminder.due_date), date)
   );
-
-  const allItems = [...dayTasks, ...dayReminders];
-
-  const getItemColor = (item) => {
-    const isTask = item.type === 'task';
-    const priority = item.priority;
-
-    if (isTask) {
-      switch (priority) {
-        case 'high': return 'bg-red-100 text-red-800 border-red-200';
-        case 'medium': return 'bg-orange-100 text-orange-800 border-orange-200';
-        case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
-        default: return 'bg-gray-100 text-gray-800 border-gray-200';
-      }
-    } else {
-      switch (priority) {
-        case 'high': return 'bg-purple-100 text-purple-800 border-purple-200';
-        case 'medium': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-        case 'low': return 'bg-teal-100 text-teal-800 border-teal-200';
-        default: return 'bg-slate-100 text-slate-800 border-slate-200';
-      }
-    }
-  };
 
   return (
     <div className={`flex-1 min-h-[250px] border-r border-gray-200 last:border-r-0 ${isToday ? 'bg-blue-50' : ''}`}>
@@ -119,23 +74,19 @@ const WeeklyCalendarDay = ({ date, tasks, reminders, isToday, onClick }) => {
         <div className="text-xl">{format(date, 'd')}</div>
       </div>
       <div className="p-2 space-y-2">
-        {allItems.map(item => (
+        {dayReminders.map(reminder => (
           <div
-            key={item.id}
-            className={`text-xs p-2 rounded border cursor-pointer hover:shadow-sm transition-shadow ${getItemColor(item)}`}
-            onClick={() => onClick(date, [item])}
-            title={`${item.type === 'task' ? 'Task' : 'Reminder'}: ${item.title} - ${item.description || 'No description'}`}
+            key={reminder.id}
+            className={`text-xs p-2 rounded border cursor-pointer hover:shadow-sm transition-shadow ${getReminderColor(reminder.priority)}`}
+            onClick={() => onClick(date, [reminder])}
+            title={`Reminder: ${reminder.title} - ${reminder.description || 'No description'}`}
           >
             <div className="flex items-center gap-1 font-medium mb-1">
-              {item.type === 'task' ? (
-                <div className="w-2 h-2 rounded bg-current" />
-              ) : (
-                <Bell className="w-3 h-3" />
-              )}
-              <span className="truncate">{item.title}</span>
+              <Bell className="w-3 h-3 shrink-0" />
+              <span className="truncate">{formatTime(reminder)} · {reminder.title}</span>
             </div>
-            {item.description && (
-              <div className="text-xs opacity-75 truncate">{item.description}</div>
+            {reminder.description && (
+              <div className="text-xs opacity-75 truncate">{reminder.description}</div>
             )}
           </div>
         ))}
@@ -145,31 +96,21 @@ const WeeklyCalendarDay = ({ date, tasks, reminders, isToday, onClick }) => {
 };
 
 export default function CalendarPage() {
-  const [allTasks, setAllTasks] = useState([]);
+  const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState('month');
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItem, setDeletingItem] = useState(null);
-  const [showTaskCreator, setShowTaskCreator] = useState(null);
+  const [showTaskCreator, setShowTaskCreator] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
-
-  const tasks = useMemo(() =>
-    allTasks.filter(item => item.type === 'task'),
-    [allTasks]
-  );
-
-  const reminders = useMemo(() =>
-    allTasks.filter(item => item.type === 'reminder'),
-    [allTasks]
-  );
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const allItemsData = await Task.list();
-      setAllTasks(allItemsData);
+      const remindersData = await Task.filter({ type: 'reminder' });
+      setReminders(remindersData);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -250,9 +191,9 @@ export default function CalendarPage() {
   };
 
   const handleTaskCreated = () => {
-    setShowTaskCreator(null);
+    setShowTaskCreator(false);
     fetchData();
-    toast({ title: "Success", description: "Item created successfully." });
+    toast({ title: "Success", description: "Reminder created successfully." });
   };
 
   const goToToday = () => {
@@ -311,7 +252,7 @@ export default function CalendarPage() {
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
-            <p className="text-sm text-gray-500">View all your tasks and reminders in calendar format.</p>
+            <p className="text-sm text-gray-500">View all your reminders in calendar format.</p>
           </div>
           <div className="flex items-center gap-2">
             <AiFeatureWrapper
@@ -345,29 +286,16 @@ export default function CalendarPage() {
             </AiFeatureWrapper>
             <Button
               size="sm"
-              onClick={() => setShowTaskCreator('task')}
+              onClick={() => setShowTaskCreator(true)}
               className="flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
-              Add Task
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowTaskCreator('reminder')}
-              className="flex items-center gap-2"
-            >
-              <Bell className="h-4 w-4" />
               Add Reminder
             </Button>
           </div>
         </div>
 
         <div className="mb-6 flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-blue-200 border border-blue-300"></div>
-            <span className="text-sm text-gray-600">Tasks</span>
-          </div>
           <div className="flex items-center gap-2">
             <Bell className="w-3 h-3 text-purple-600" />
             <span className="text-sm text-gray-600">Reminders</span>
@@ -436,7 +364,6 @@ export default function CalendarPage() {
                   <CalendarDay
                     key={day.toISOString()}
                     date={day}
-                    tasks={tasks}
                     reminders={reminders}
                     isCurrentMonth={isSameMonth(day, currentDate)}
                     isToday={isSameDay(day, new Date())}
@@ -450,7 +377,6 @@ export default function CalendarPage() {
                   <WeeklyCalendarDay
                     key={day.toISOString()}
                     date={day}
-                    tasks={tasks}
                     reminders={reminders}
                     isToday={isSameDay(day, new Date())}
                     onClick={handleDayClick}
@@ -486,9 +412,9 @@ export default function CalendarPage() {
 
       {showTaskCreator && (
         <TaskCreator
-          taskType={showTaskCreator}
-          isOpen={!!showTaskCreator}
-          onClose={() => setShowTaskCreator(null)}
+          taskType="reminder"
+          isOpen={showTaskCreator}
+          onClose={() => setShowTaskCreator(false)}
           onTaskCreated={handleTaskCreated}
         />
       )}

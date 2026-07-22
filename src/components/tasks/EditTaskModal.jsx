@@ -8,17 +8,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Trash2 } from 'lucide-react';
 
 export default function EditTaskModal({ task, isOpen, onClose, onTaskUpdated, onTaskDeleted }) {
+  const isReminder = task?.type === 'reminder';
   const [title, setTitle] = useState(task?.title || '');
   const [description, setDescription] = useState(task?.description || '');
   const [dueDate, setDueDate] = useState(task?.due_date ? task.due_date.slice(0, 10) : '');
+  const [dueTime, setDueTime] = useState(task?.due_time || '');
   const [priority, setPriority] = useState(task?.priority || 'medium');
   const [status, setStatus] = useState(task?.status || 'pending');
   const [saving, setSaving] = useState(false);
 
+  const canSave = title.trim() && (!isReminder || (dueDate && dueTime));
+
   const handleSave = async () => {
+    if (!canSave) return;
     setSaving(true);
     try {
-      await Task.update(task.id, { title, description, due_date: dueDate || null, priority, status });
+      await Task.update(task.id, {
+        title,
+        description,
+        due_date: dueDate || null,
+        due_time: isReminder ? dueTime : null,
+        priority,
+        status,
+      });
       onTaskUpdated();
     } finally {
       setSaving(false);
@@ -29,7 +41,7 @@ export default function EditTaskModal({ task, isOpen, onClose, onTaskUpdated, on
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit {task?.type === 'reminder' ? 'Reminder' : 'Task'}</DialogTitle>
+          <DialogTitle>Edit {isReminder ? 'Reminder' : 'Task'}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div>
@@ -40,11 +52,17 @@ export default function EditTaskModal({ task, isOpen, onClose, onTaskUpdated, on
             <Label>Description</Label>
             <Input value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className={isReminder ? 'grid grid-cols-4 gap-3' : 'grid grid-cols-3 gap-3'}>
             <div>
-              <Label>Due date</Label>
+              <Label>Due date{isReminder ? '' : ' (optional)'}</Label>
               <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
             </div>
+            {isReminder && (
+              <div>
+                <Label>Due time</Label>
+                <Input type="time" value={dueTime} onChange={(e) => setDueTime(e.target.value)} />
+              </div>
+            )}
             <div>
               <Label>Priority</Label>
               <Select value={priority} onValueChange={setPriority}>
@@ -83,7 +101,7 @@ export default function EditTaskModal({ task, isOpen, onClose, onTaskUpdated, on
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving || !canSave}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
             </Button>
           </div>

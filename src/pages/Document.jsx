@@ -35,7 +35,12 @@ const TaskSuggestionItem = ({ suggestion, onApprove, onDecline }) => {
         <div className="flex items-center justify-between p-3 rounded-lg border bg-blue-50 border-blue-200">
             <div>
                 <p className="font-medium text-blue-900">{suggestion.title}</p>
-                <p className="text-sm text-blue-700">Due: {format(new Date(suggestion.due_date), 'PPP')}</p>
+                {suggestion.due_date && (
+                    <p className="text-sm text-blue-700">
+                        Due: {format(new Date(suggestion.due_date), 'PPP')}
+                        {suggestion.type === 'reminder' && suggestion.due_time && ` at ${suggestion.due_time}`}
+                    </p>
+                )}
             </div>
             <div className="flex items-center gap-2">
                 <Button
@@ -269,6 +274,8 @@ Instructions:
 - If the document is in English, write tasks in English
 - If the document is in another language, write tasks in that language
 - Return an empty array if no tasks/reminders are found
+- A "task" is a to-do item: give it a due_date only if the document states a deadline, and never give it a due_time.
+- A "reminder" is a calendar event: it must have both due_date and due_time. Only classify something as a reminder if the document specifies (or clearly implies) an actual clock time (e.g. an appointment, a meeting) — otherwise classify it as a task.
 
 Return tasks/reminders in the document's original language.`,
                 response_json_schema: {
@@ -282,10 +289,11 @@ Return tasks/reminders in the document's original language.`,
                                     title: { type: "string" },
                                     description: { type: "string" },
                                     due_date: { type: "string", format: "date" },
+                                    due_time: { type: "string", description: "24h HH:MM, reminders only" },
                                     priority: { type: "string", enum: ["low", "medium", "high"] },
                                     type: { type: "string", enum: ["task", "reminder"] }
                                 },
-                                required: ["title", "due_date", "priority", "type"]
+                                required: ["title", "priority", "type"]
                             }
                         }
                     }
@@ -375,6 +383,7 @@ Return tasks/reminders in the document's original language.`,
             title: suggestion.title,
             description: suggestion.description,
             due_date: suggestion.due_date,
+            due_time: suggestion.type === 'reminder' ? suggestion.due_time : null,
             priority: suggestion.priority,
             type: suggestion.type,
             status: "pending",
