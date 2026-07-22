@@ -195,22 +195,20 @@ ${allText.substring(0, 8000)}
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="lg:hidden text-gray-500">
             <Menu className="h-6 w-6" />
           </Button>
+          <GlobalSearchBar />
           <div className="flex-1" />
-          <div className="flex items-center gap-2">
-            <GlobalSearchBar />
-            <Link to={createPageUrl('Help')} title="Help Center">
-              <Button variant="ghost" size="icon">
-                <HelpCircle className="h-6 w-6 text-gray-600" />
-              </Button>
-            </Link>
-          </div>
+          <Link to={createPageUrl('Help')} title="Help Center">
+            <Button variant="ghost" size="icon">
+              <HelpCircle className="h-6 w-6 text-gray-600" />
+            </Button>
+          </Link>
         </header>
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
 
       <div className="fixed bottom-6 right-6 z-50">
-        <Button onClick={() => setShowAgentChat(true)} size="icon" className="rounded-full w-14 h-14 bg-blue-600 hover:bg-blue-700 shadow-lg">
-          <Bot className="h-7 w-7 text-white" />
+        <Button onClick={() => setShowAgentChat(true)} size="icon" className="rounded-full w-[78px] h-[78px] bg-blue-600 hover:bg-blue-700 shadow-lg">
+          <Bot className="h-12! w-12! text-white" />
         </Button>
       </div>
 
