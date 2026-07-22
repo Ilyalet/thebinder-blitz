@@ -82,11 +82,6 @@ export default function Dashboard() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-sm text-gray-500 mt-1">Here's what's happening with your documents and tasks.</p>
-        </div>
-
-        <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-1">Scan or upload a document</h2>
           <p className="text-sm text-gray-500 mb-4">
             Receipts, warranties, bills, insurance policies, contracts, appointment letters — anything paper or PDF.

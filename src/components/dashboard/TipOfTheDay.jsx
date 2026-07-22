@@ -18,12 +18,12 @@ export default function TipOfTheDay() {
   }, []);
 
   return (
-    <Card className="bg-amber-50 border-amber-200">
+    <Card className="bg-blue-50 border-blue-200">
       <CardContent className="p-4 flex items-start gap-3">
         <Lightbulb className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
         <div>
-          <h3 className="text-sm font-semibold text-amber-900">Tip of the day</h3>
-          <p className="text-sm text-amber-800 mt-0.5">{tip}</p>
+          <h3 className="text-base font-semibold text-gray-900">Tip of the day</h3>
+          <p className="text-sm text-gray-600 mt-0.5">{tip}</p>
         </div>
       </CardContent>
     </Card>
