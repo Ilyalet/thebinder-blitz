@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { Home, FileText, CheckCircle, Bell, Settings, Menu, Tag, Loader2, Calendar, Bot, HelpCircle } from 'lucide-react';
+import { Home, FileText, CheckCircle, Bell, Settings, Menu, Tag, Loader2, Calendar, Bot, HelpCircle, BookOpen } from 'lucide-react';
 import TodayActivity from '@/components/dashboard/TodayActivity';
 import { Document, Task, User } from '@/entities/all';
 import { format } from 'date-fns';
@@ -146,7 +146,10 @@ ${allText.substring(0, 8000)}
   const sidebarContent = (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-900">The Binder</h1>
+        <h1 className="flex items-center gap-2 text-xl font-bold text-gray-900">
+          <BookOpen className="h-5 w-5 text-blue-600" />
+          The Binder
+        </h1>
       </div>
       <nav className="flex-1 space-y-1 p-4">
         <NavItem href={createPageUrl('Dashboard')} icon={Home} currentPath={currentPath}>
