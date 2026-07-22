@@ -87,7 +87,11 @@ export default function Dashboard() {
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Scan or upload a document</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-1">Scan or upload a document</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Receipts, warranties, bills, insurance policies, contracts, appointment letters — anything paper or PDF.
+            TheBinder reads it, files it by type, and turns any deadlines or appointments it finds into tasks and reminders automatically, so everything stays organized and nothing gets missed.
+          </p>
           <AIDocumentScanner onUploadComplete={handleUploadComplete} />
         </div>
 
