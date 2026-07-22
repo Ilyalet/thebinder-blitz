@@ -5,8 +5,9 @@ import TaskItem from '@/components/tasks/TaskItem';
 import EditTaskModal from '@/components/tasks/EditTaskModal';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
+import TaskCreator from '@/components/tasks/TaskCreator';
 
 const PAGE_SIZE = 10;
 
@@ -16,6 +17,7 @@ export default function TasksPage() {
     const [loading, setLoading] = useState(true);
     const [editingTask, setEditingTask] = useState(null);
     const [deletingTask, setDeletingTask] = useState(null);
+    const [showTaskCreator, setShowTaskCreator] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [hasNextPage, setHasNextPage] = useState(false);
     const { toast } = useToast();
@@ -95,12 +97,28 @@ export default function TasksPage() {
         toast({ title: "Success", description: "Task has been deleted." });
     };
 
+    const handleTaskCreated = () => {
+        setShowTaskCreator(false);
+        fetchData();
+        toast({ title: "Success", description: "Task created successfully." });
+    };
+
     return (
         <div className="p-4 sm:p-6 lg:p-8">
             <div className="max-w-4xl mx-auto">
-                <div className="mb-6 text-center sm:text-left">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Tasks</h1>
-                    <p className="text-sm text-gray-500 mt-1">All your tasks in one place.</p>
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-center sm:text-left">
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Tasks</h1>
+                        <p className="text-sm text-gray-500 mt-1">All your tasks in one place.</p>
+                    </div>
+                    <Button
+                        size="sm"
+                        onClick={() => setShowTaskCreator(true)}
+                        className="flex items-center gap-2 self-center sm:self-auto"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Add Task
+                    </Button>
                 </div>
 
                 <TaskFilters filters={filters} onFilterChange={setFilters} />
@@ -175,6 +193,15 @@ export default function TasksPage() {
                     onClose={() => setDeletingTask(null)}
                     onConfirm={handleDelete}
                     itemName={deletingTask.title}
+                />
+            )}
+
+            {showTaskCreator && (
+                <TaskCreator
+                    taskType="task"
+                    isOpen={showTaskCreator}
+                    onClose={() => setShowTaskCreator(false)}
+                    onTaskCreated={handleTaskCreated}
                 />
             )}
         </div>
