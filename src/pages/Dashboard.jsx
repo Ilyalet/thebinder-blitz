@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
-import TipOfTheDay from '@/components/dashboard/TipOfTheDay';
 
 export default function Dashboard() {
   const [documents, setDocuments] = useState([]);
@@ -89,8 +88,6 @@ export default function Dashboard() {
           </p>
           <AIDocumentScanner onUploadComplete={handleUploadComplete} />
         </div>
-
-        <TipOfTheDay />
 
         <div>
           <Tabs defaultValue="recent">
